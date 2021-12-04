@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 pragma solidity =0.8.0;
 
 import "@openzeppelin/contracts/utils/Counters.sol";
@@ -5,7 +6,7 @@ import "@openzeppelin/contracts/utils/Counters.sol";
 contract Register {
     using Counters for Counters.Counter;
     Counters.Counter public ngoIds;
-    Counters.Counter public _projectIds;
+    // Counters.Counter public _projectIds;
 
 
     struct NGODetails {
@@ -13,15 +14,15 @@ contract Register {
         string name;
     }
 
-    struct ProjectDetails {
-        uint projectId;
-        NGODetails ngoDetailsforProject;
-        string projectDesc;
-        uint projectStart;
-        uint projectComplete;
-    }
+    // struct ProjectDetails {
+    //     uint projectId;
+    //     NGODetails ngoDetailsforProject;
+    //     string projectDesc;
+    //     uint projectStart;
+    //     uint projectComplete;
+    // }
 
-    mapping(uint => ProjectDetails) public projectDetails;
+    // mapping(uint => ProjectDetails) public projectDetails;
 
     mapping(uint => NGODetails) public ngoDetails;
 
@@ -35,16 +36,16 @@ contract Register {
         );
     }
 
-    function addProject(uint _ngoId, string memory _projectDesc, uint _projectStart, uint _projectEnd) public {
-        _projectIds.increment();
-        uint projectId = _projectIds.current();
+    // function addProject(uint _ngoId, string memory _projectDesc, uint _projectStart, uint _projectEnd) public {
+    //     _projectIds.increment();
+    //     uint projectId = _projectIds.current();
 
-        projectDetails[projectId] = ProjectDetails (
-            projectId,
-            ngoDetails[_ngoId],
-            _projectDesc,
-            _projectStart,
-            _projectEnd
-        );
-    }
+    //     projectDetails[projectId] = ProjectDetails (
+    //         projectId,
+    //         ngoDetails[_ngoId],
+    //         _projectDesc,
+    //         _projectStart,
+    //         _projectEnd
+    //     );
+    // }
 }
