@@ -24,18 +24,34 @@ contract MatchPoolData {
         address matchPoolOwner;
         uint allotedAmount;
         uint48 createdAt;
-        ProjectDetails allProjectsInPool;
+        uint projectInPoolId;
     } 
 
     /// @notice details of projects
     struct ProjectDetails {
         uint projectId;
-        registerAddress.ngoDetails(MatchPoolDataNGOId);
+        uint NGOId;
         string projectDesc;
+        uint votes;
+        uint amount;
     }
 
     mapping(uint96 => MatchPoolDetail) public matchPoolDetails;
     mapping(uint => ProjectDetails) public projectDetails;
+    mapping(uint => mapping(uint => ProjectDetails)) public projectInMatchPool;
+
+    function fillDetailsofProjects(uint _ngoId, string memory _projectDesc) public {
+        _projectIds.increment();
+        uint projectId = _projectIds.current();
+
+        projectDetails[projectId] = ProjectDetails(
+            projectId,
+            _ngoId,
+            _projectDesc,
+            0,
+            0
+        );
+    }
 
     function getDetailsofNGOofMatchingPool(uint _ngoId) public {
         MatchPoolDataNGOId = registerAddress.ngoDetails(_ngoId);
