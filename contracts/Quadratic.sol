@@ -5,25 +5,19 @@ import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contr
 import "@openzeppelin/contracts/utils/Counters.sol";
 // import "@openzeppelin-contracts/contracts/math/SafeMath.sol";
 
-contract Quadratic {
-    using SafeERC20 for IERC20;
-
+contract Qaudratic {
     using Counters for Counters.Counter;
     Counters.Counter public _ngoIds;
-    Counters.Counter public _poolId;
-    Counters.Counter public _voterId;
 
-    uint public amount = 0.001 ether;
-    // uint public multiplier = amount * 2;
-
+    uint public payoutAmount;
+    address public payoutAuthority;
+    uint public numOfProject;
     uint public startTime;
     uint public endTime;
-    address public payoutAuthority;
     IERC20 public donationToken;
-    bool public hasPaid;
 
     struct Details {
-        uint id;
+        uint256 id;
         string name;
         address dAddress;
     }
@@ -32,8 +26,10 @@ contract Quadratic {
         uint id;
         string name;
         address pAddress;
-        uint votes;
+        uint balance;
+        uint voteCount;
         Details details;
+        // mapping(address => bool) hasvoted;
     }
 
     struct MatchPool {
@@ -43,73 +39,102 @@ contract Quadratic {
         uint endTime;
         uint amount;
         ProjectDetails pDetails;
+        // mapping(uint => ProjectDetails[]) pDetails;
     }
 
     struct Voter {
-        address voter;
-        uint projectVotedFor;
+        // address voter;
+        address projectVotedFor;
         uint amount;
-        uint count;
     }
+
 
     Details[] public NGODetails;
     ProjectDetails[] public projectDetails;
     MatchPool[] public matchPool;
-    Voter[] public voters;
 
-    mapping(uint => ProjectDetails) pDetails;
+    mapping(address => Voter) public voted;
+    mapping(address => uint) public amtDonationArray;
 
-    
+    constructor(IERC20 _donationToken) {
+        donationToken = _donationToken;
+    }
 
     function registerDetails(string memory _name, address _ngoAddress) public {
         _ngoIds.increment();
         uint ngoIds = _ngoIds.current();
 
-        NGODetails[ngoIds] = Details(ngoIds, _name, _ngoAddress);
+        NGODetails.push(Details(ngoIds, _name, _ngoAddress));
     }
 
-    function fillProjectDetails(uint _ngoId, uint _nOfprojects, string memory _name, address _pAddress) public {
-        require(_nOfprojects > 2, "No of projects should be greater than 2");
+    function howManyProjects(uint _numOfProjects) public pure {
+        require(_numOfProjects > 1, "should be more than 2");
+        // numOfProject = _numOfProjects;
+    }
 
-        for(uint48 i = 0; i < _nOfprojects; i++) {
-            projectDetails[i] = ProjectDetails(
-                i,
-                _name,
+    // function registerProjects() public {
+    
+    // }
+
+    function Projects(uint _projects, uint _ngoId, uint _pId, string memory _pName, address _pAddress) public {
+        require(_pAddress != address(0), "Cannot have zero address");
+        howManyProjects(_projects);
+        numOfProject = _projects;
+        for(uint i = 0; i < numOfProject; i++) {
+            projectDetails.push(ProjectDetails(
+                _pId, 
+                _pName,
                 _pAddress,
                 0,
+                0,
                 NGODetails[_ngoId]
-            );
+            ));
         }
     }
 
-    function createPool(address _authority, uint _startTime, uint _endTime, uint _amount, uint _pId) public {
-        _poolId.increment();
-        uint poolId = _poolId.current();
+    function createPool(uint _poolId, uint _pId, address _poolCreator, uint _startTime, uint _endTime, uint _amount) public {
+        startTime = _startTime;
+        endTime = _endTime;
 
-        matchPool[poolId] = MatchPool(
-            poolId,
-            _authority,
+        payoutAuthority = _poolCreator;
+        payoutAmount = _amount;
+        
+        matchPool.push(MatchPool(
+            _poolId,
+            _poolCreator,
             _startTime,
             _endTime,
             _amount,
             projectDetails[_pId]
-        );
+        ));
     }
 
-    function voteForProject(uint _voteForProject) public {
-        _voterId.increment();
-        uint voterId = _voterId.current();
-        uint multiplier = 0.001 ether;
-
-        uint voteCount = 0;
-
-        voters[voterId] = Voter(msg.sender, _voteForProject, multiplier, voteCount++);
-        pDetails[_voteForProject].votes = voteCount++;
-
-        multiplier++;
+    function getNGO(uint _id) public view returns(uint, string memory, address) {
+        return(NGODetails[_id].id, NGODetails[_id].name, NGODetails[_id].dAddress);
     }
 
-    // function calculateAndTransferMoney() public {
+    // function getProjectDetails(uint _pId, uint _ngoId) public view returns(uint , string memory, address, uint, Details[] memory) {
+    //     Details storage d = projectDetails[_pId].details[];
+    //     return(projectDetails[_pId].id, projectDetails[_pId].name, projectDetails[_pId].pAddress, projectDetails[_pId].balance, d);
+    // }
+
+    function startVotingInPool(uint _amount, uint _projectId) public {
+        require(block.timestamp > startTime && block.timestamp < endTime, "Donation Over");
+        uint amt = _amount;
     
+        projectDetails[_projectId].balance = amt;
+        projectDetails[_projectId].voteCount++;
+
+        address pAdd = projectDetails[_projectId].pAddress;
+        
+        amtDonationArray[pAdd] = amt;
+        IERC20(donationToken).transferFrom(msg.sender, projectDetails[_projectId].pAddress, _amount);
+    }
+
+    // function provideMoney() public {
+    //     require(block.timestamp > endTime);
+    //     uint pNumber = projectDetails.length;
+
+
     // }
 }
