@@ -5,136 +5,93 @@ import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contr
 import "@openzeppelin/contracts/utils/Counters.sol";
 // import "@openzeppelin-contracts/contracts/math/SafeMath.sol";
 
-contract Qaudratic {
-    using Counters for Counters.Counter;
-    Counters.Counter public _ngoIds;
+ 
 
-    uint public payoutAmount;
-    address public payoutAuthority;
-    uint public numOfProject;
-    uint public startTime;
-    uint public endTime;
-    IERC20 public donationToken;
+contract Quadratic {
 
-    struct Details {
-        uint256 id;
+    uint mPoolId;
+
+ 
+    struct NGO {
         string name;
-        address dAddress;
+        string someval;
     }
 
-    struct ProjectDetails {
-        uint id;
+ 
+
+    struct Project {
         string name;
-        address pAddress;
-        uint balance;
-        uint voteCount;
-        Details details;
-        // mapping(address => bool) hasvoted;
+        // uint pStartTime;
+        // uint PEndTime;
+        mapping(address => uint) voterAddToAmtForProject;
     }
 
     struct MatchPool {
-        uint poolId;
-        address authority;
+        uint id;
         uint startTime;
         uint endTime;
+        uint creator;
         uint amount;
-        ProjectDetails pDetails;
-        // mapping(uint => ProjectDetails[]) pDetails;
+        mapping(address => Project) projectsInPool;
     }
 
-    struct Voter {
-        // address voter;
-        address projectVotedFor;
-        uint amount;
+    mapping(address => NGO) ngo;
+    mapping(address => Project) p;
+    mapping(address => NGO) projectToNGO;
+    mapping(uint => MatchPool) matchPool;
+    mapping(address => Project) projectsInMatchPool;
+
+ 
+    function setMatchPool(uint sTime, uint eTime, uint _creator, uint _amt) public {
+        MatchPool storage mp = matchPool[mPoolId++];
+
+        mp.startTime = sTime;
+        mp.endTime = eTime;
+        mp.creator = _creator;
+        mp.amount = _amt;
     }
 
+ 
 
-    Details[] public NGODetails;
-    ProjectDetails[] public projectDetails;
-    MatchPool[] public matchPool;
+    // function getMatchPool(uint _id) public returns(uint, uint, uint, address, uint) {
 
-    mapping(address => Voter) public voted;
-    mapping(address => uint) public amtDonationArray;
+    //     return(matchPool[_id].id, matchPool[_id].startTime, matchPool[_id].endTime, matchPool[_id].creator, matchPool[_id].amount);
 
-    constructor(IERC20 _donationToken) {
-        donationToken = _donationToken;
-    }
-
-    function registerDetails(string memory _name, address _ngoAddress) public {
-        _ngoIds.increment();
-        uint ngoIds = _ngoIds.current();
-
-        NGODetails.push(Details(ngoIds, _name, _ngoAddress));
-    }
-
-    function howManyProjects(uint _numOfProjects) public pure {
-        require(_numOfProjects > 1, "should be more than 2");
-        // numOfProject = _numOfProjects;
-    }
-
-    // function registerProjects() public {
-    
     // }
 
-    function Projects(uint _projects, uint _ngoId, uint _pId, string memory _pName, address _pAddress) public {
-        require(_pAddress != address(0), "Cannot have zero address");
-        howManyProjects(_projects);
-        numOfProject = _projects;
-        for(uint i = 0; i < numOfProject; i++) {
-            projectDetails.push(ProjectDetails(
-                _pId, 
-                _pName,
-                _pAddress,
-                0,
-                0,
-                NGODetails[_ngoId]
-            ));
-        }
+ 
+
+    function setProject(address poolAddr, address ngoA, address pAddress, string memory _name) public {
+
+        Project storage pn = p[pAddress];
+
+        pn.name = _name;
+
+ 
+        projectToNGO[pAddress] = ngo[ngoA];
+        projectsInMatchPool[poolAddr] = p[pAddress];
+
     }
 
-    function createPool(uint _poolId, uint _pId, address _poolCreator, uint _startTime, uint _endTime, uint _amount) public {
-        startTime = _startTime;
-        endTime = _endTime;
-
-        payoutAuthority = _poolCreator;
-        payoutAmount = _amount;
-        
-        matchPool.push(MatchPool(
-            _poolId,
-            _poolCreator,
-            _startTime,
-            _endTime,
-            _amount,
-            projectDetails[_pId]
-        ));
+ 
+    function getProject(address pAdd, address voter) public returns(string memory) {
+        return(p[pAdd].name);
     }
 
-    function getNGO(uint _id) public view returns(uint, string memory, address) {
-        return(NGODetails[_id].id, NGODetails[_id].name, NGODetails[_id].dAddress);
+
+    function getNGOOfProject(address _pAddr) public returns(NGO memory) {
+        return(projectToNGO[_pAddr]);
     }
 
-    // function getProjectDetails(uint _pId, uint _ngoId) public view returns(uint , string memory, address, uint, Details[] memory) {
-    //     Details storage d = projectDetails[_pId].details[];
-    //     return(projectDetails[_pId].id, projectDetails[_pId].name, projectDetails[_pId].pAddress, projectDetails[_pId].balance, d);
-    // }
-
-    function startVotingInPool(uint _amount, uint _projectId) public {
-        require(block.timestamp > startTime && block.timestamp < endTime, "Donation Over");
-        uint amt = _amount;
-    
-        projectDetails[_projectId].balance = amt;
-        projectDetails[_projectId].voteCount++;
-
-        address pAdd = projectDetails[_projectId].pAddress;
-        
-        amtDonationArray[pAdd] = amt;
-        IERC20(donationToken).transferFrom(msg.sender, projectDetails[_projectId].pAddress, _amount);
+ 
+    function setNgo(address add, string memory n, string memory some) public {
+        NGO memory nd = NGO(n, some);
+        ngo[add] = nd;
     }
 
-    // function provideMoney() public {
-    //     require(block.timestamp > endTime);
-    //     uint pNumber = projectDetails.length;
+ 
+    function getNGO(address a) public view returns(string memory, string memory) {
+        return(ngo[a].name, ngo[a].someval);
+    }
 
-
-    // }
 }
