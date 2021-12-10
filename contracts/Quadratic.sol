@@ -11,13 +11,10 @@ contract Quadratic {
 
     uint mPoolId;
 
- 
     struct NGO {
         string name;
         string someval;
     }
-
- 
 
     struct Project {
         string name;
@@ -41,6 +38,16 @@ contract Quadratic {
     mapping(uint => MatchPool) matchPool;
     mapping(address => Project) projectsInMatchPool;
 
+
+    function voteForProject(uint _amt, address projAdd) public {
+        Project storage pk = p[projAdd];
+        pk.voterAddToAmtForProject[msg.sender] = _amt;
+    }
+
+    function getDonors(address padd) public view returns(uint) { 
+        Project storage pst = p[padd];
+        return(pst.voterAddToAmtForProject[msg.sender]);
+    }
  
     function setMatchPool(uint sTime, uint eTime, uint _creator, uint _amt) public {
         MatchPool storage mp = matchPool[mPoolId++];
@@ -52,19 +59,14 @@ contract Quadratic {
     }
 
  
-
     // function getMatchPool(uint _id) public returns(uint, uint, uint, address, uint) {
-
     //     return(matchPool[_id].id, matchPool[_id].startTime, matchPool[_id].endTime, matchPool[_id].creator, matchPool[_id].amount);
-
     // }
 
  
-
     function setProject(address poolAddr, address ngoA, address pAddress, string memory _name) public {
 
         Project storage pn = p[pAddress];
-
         pn.name = _name;
 
  
