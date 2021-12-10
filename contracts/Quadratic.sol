@@ -10,6 +10,7 @@ import "@openzeppelin/contracts/utils/Counters.sol";
 contract Quadratic {
 
     uint mPoolId;
+    uint counter;
 
     struct NGO {
         string name;
@@ -29,7 +30,7 @@ contract Quadratic {
         uint endTime;
         uint creator;
         uint amount;
-        mapping(address => Project) projectsInPool;
+        // mapping(address => Project) projectsInPool;
     }
 
     mapping(address => NGO) ngo;
@@ -71,8 +72,9 @@ contract Quadratic {
 
  
         projectToNGO[pAddress] = ngo[ngoA];
-        projectsInMatchPool[poolAddr] = p[pAddress];
-
+        projectsInMatchPool[poolAddr] = pAddress;
+        
+        counter++;
     }
 
  
