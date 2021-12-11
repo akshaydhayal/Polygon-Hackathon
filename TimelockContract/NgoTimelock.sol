@@ -20,6 +20,8 @@ contract Timelock
     function deposit(address token, uint amount) external{
         IERC20(token).transferFrom(msg.sender, address(this),amount);
     }
+    
+    receive() external payable {}
 
     function withdraw(address token,uint amount) external{
         require(msg.sender==owner,"You are not the owner");
